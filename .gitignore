@@ -1,1 +1,3 @@
 venv/
+blood-pressure-stats-*.json
+*.log
