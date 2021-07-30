@@ -3,9 +3,9 @@
 from datetime import date, datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import RPi.GPIO as GPIO
-from time import sleep
 from slack_sdk.webhook import WebhookClient
+from gpiozero import Button
+from signal import pause
 import json
 
 # Google Config
@@ -19,10 +19,6 @@ gpio_input_pin = 10
 logfile = "bpstatstracker.log"
 slack_config_file = "slack-config.json"
 
-with open(slack_config_file, "r") as f:
-    slack_config = json.loads(f.read())
-    slack_url = slack_config['logs_url']
-
 
 def log(msg, log_level = "INFO", post_to_slack = True):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -34,7 +30,9 @@ def log(msg, log_level = "INFO", post_to_slack = True):
 
 
 def tell_slack(msg):
-    if slack_url == None:
+    with open(slack_config_file, "r") as f:
+        slack_url = json.loads(f.read()).get('logs_url')
+    if not slack_url:
         log("Slack web hook URL not found!", log_level="ERROR", post_to_slack=False)
         return
     slack_logger = WebhookClient(slack_url)
@@ -44,11 +42,7 @@ def tell_slack(msg):
     log(logmessage, log_level=loglevel, post_to_slack=False)
 
 
-def button_pressed(channel):
-    log("button pressed")
-
-
-def record_time(channel):
+def write_to_spreadsheet():
     scopes = [
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/drive'
@@ -66,15 +60,12 @@ def record_time(channel):
     log(f"Wrote meds taken timestamp to Google Sheet {google_sheets_file}")
 
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(gpio_input_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.add_event_detect(gpio_input_pin, GPIO.RISING, callback=record_time, bouncetime=500)
+def pressed():
+    write_to_spreadsheet()
 
-log("Waiting for button presses")
-while True:
-    sleep(5)
 
-#message = input("Press ENTER to quit")
+button = Button(15, pull_up=False)
+button.when_pressed = pressed
 
-GPIO.cleanup()
+log("Waiting to record events")
+pause()
