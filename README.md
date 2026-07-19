@@ -32,15 +32,20 @@ signal pins running down the center. The board has 30 numbered rows and 10
 lettered columns (`a`–`j`) between the two rail columns.
 
 ```
- 3V3 +/-                 GPIO pins                  5V +/-
-   |   |         a  b  c  d  e  f  g  h  i  j          |   |
-   |   |   27    .  .  [R]-+--+  .  .  .  .             |   |   <- resistor: 27c -> 3V3+
-   |   |   28    .  .  .  |  |  .  .  .  .             |   |
-   |   |   29    .  .  .  |  |  .  .  .  .             |   |       button legs span
-   |   |   30    .  .  +--+--+  .  [J]--+  .             |   |   <- jumper: 30c -> 10h
-   |   |                                |
-   |   |   10    .  .  .  .  .  .  .  X  .  .             |   |   <- RXD (GPIO15 / physical pin 10)
+      a  b  c  d  e  f  g  h  i  j
+  27  .  .  R  B  .  .  B  .  .  .
+  28  .  .  .  B  .  .  B  .  .  .
+  29  .  .  .  B  .  .  B  .  .  .
+  30  .  .  J  B  .  .  B  .  .  .
+
+  10  .  .  .  .  .  .  .  X  .  .
 ```
+
+- `R` — 220 Ω resistor leg at 27c; its other end goes to the **3V3+** rail.
+- `J` — jumper wire leg at 30c; its other end goes to 10h.
+- `B` — pushbutton legs, occupying columns d and g across rows 27–30.
+- `X` — 10h, the pin labeled **RXD** on the GPIO breakout (BCM `GPIO15`,
+  physical pin 10).
 
 ![Breadboard layout](images/breadboard.jpg)
 
